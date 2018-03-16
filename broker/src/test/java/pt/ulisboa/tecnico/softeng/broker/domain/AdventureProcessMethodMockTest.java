@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
+import pt.ulisboa.tecnico.softeng.bank.exception.BankException;
 import pt.ulisboa.tecnico.softeng.broker.interfaces.ActivityInterface;
 import pt.ulisboa.tecnico.softeng.broker.interfaces.BankInterface;
 import pt.ulisboa.tecnico.softeng.broker.interfaces.HotelInterface;
@@ -55,6 +56,30 @@ public class AdventureProcessMethodMockTest {
 		Assert.assertEquals(PAYMENT_CONFIRMATION, adventure.getBankPayment());
 		Assert.assertEquals(HOTEL_REFERENCE, adventure.getRoomBooking());
 		Assert.assertEquals(ACTIVITY_REFERENCE, adventure.getActivityBooking());
+	}
+	
+	public void processWithBankException(@Mocked final BankInterface bankInterface,
+			@Mocked final HotelInterface hotelInterface, @Mocked final ActivityInterface activityInterface) {
+		new Expectations() {
+			{
+			
+			BankInterface.processPayment(IBAN, 300);
+			this.result = new BankException();
+		}
+		};
+		
+		Adventure adventure = new Adventure(this.broker, this.begin, this.end, 20, IBAN, 300);
+		
+		try {
+			adventure.process();
+			Assert.fail();
+		}
+		
+		catch(BankException be){
+			Assert.assertNull(adventure.getBankPayment());
+			
+		}
+		
 	}
 
 	@After
